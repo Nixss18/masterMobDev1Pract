@@ -5,7 +5,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentActivity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,7 +16,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.Manifest;
-import android.widget.Toast;
 
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -31,7 +29,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
@@ -50,7 +47,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     private boolean locationPermissionGranted;
     private Location lastKnownLocation;
-    private LatLng defaultLocation = new LatLng(57.536393, 25.424059);
+    private final LatLng defaultLocation = new LatLng(57.536393, 25.424059);
     // The entry point to the Fused Location Provider.
     private FusedLocationProviderClient fusedLocationProviderClient;
     // The entry point to the Places API.
@@ -61,8 +58,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LatLng[] likelyPlaceLatLngs;
 
 
-    //mybe jadzes ara bus
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
 
     private static final int M_MAX_ENTRIES = 10;
@@ -80,21 +75,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Initialize the map
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        assert mapFragment != null;
         mapFragment.getMapAsync(this);
     }
 
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
         setupMap();
     }
@@ -122,21 +110,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 showCurrentPlace();
                 return true;
             case R.id.readnews:
+//                startActivity(new Intent(MapsActivity.this, ReadNewsActivity.class));
                 startActivity(new Intent(MapsActivity.this, ReadNewsActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
-
-
-
-
-
-
-
-
-
 
 
     @Override
@@ -185,55 +165,66 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         try {
             if (locationPermissionGranted) {
                 Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Location> task) {
-                        if (task.isSuccessful()) {
-                            // Set the map's camera position to the current location of the device.
-                            lastKnownLocation = task.getResult();
-                            if (lastKnownLocation != null) {
-                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                        new LatLng(lastKnownLocation.getLatitude(),
-                                                lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
-                            }
+                locationResult.addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        // Set the map's camera position to the current location of the device.
+                        lastKnownLocation = task.getResult();
+                        if (lastKnownLocation != null) {
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                    new LatLng(lastKnownLocation.getLatitude(),
+                                            lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                        }
 
-                            // Move the camera instantly to Sydney with a zoom of 15.
-                            //        map.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 15));
-                            LatLng mountainView = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                        // Move the camera instantly to Sydney with a zoom of 15.
+                        //        map.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 15));
+                        assert lastKnownLocation != null;
+                        LatLng mountainView = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
 
-                            // Zoom in, animating the camera.
-                            mMap.animateCamera(CameraUpdateFactory.zoomIn());
+                        // Zoom in, animating the camera.
+                        mMap.animateCamera(CameraUpdateFactory.zoomIn());
 
-                            // Zoom out to zoom level 10, animating with a duration of 2 seconds.
-                            mMap.animateCamera(CameraUpdateFactory.zoomTo(10), 2000, null);
+                        // Zoom out to zoom level 10, animating with a duration of 2 seconds.
+                        mMap.animateCamera(CameraUpdateFactory.zoomTo(10), 2000, null);
 
-                            // Construct a CameraPosition focusing on Mountain View and animate the camera to that position.
-                            CameraPosition cameraPosition = new CameraPosition.Builder()
-                                    .target(mountainView )      // Sets the center of the map to Mountain View
-                                    .zoom(17)                   // Sets the zoom
-                                    .bearing(90)                // Sets the orientation of the camera to east
-                                    .tilt(30)                   // Sets the tilt of the camera to 30 degrees
-                                    .build();                   // Creates a CameraPosition from the builder
-                            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                        // Construct a CameraPosition focusing on Mountain View and animate the camera to that position.
+                        CameraPosition cameraPosition = new CameraPosition.Builder()
+                                .target(mountainView )      // Sets the center of the map to Mountain View
+                                .zoom(17)                   // Sets the zoom
+                                .bearing(90)                // Sets the orientation of the camera to east
+                                .tilt(30)                   // Sets the tilt of the camera to 30 degrees
+                                .build();                   // Creates a CameraPosition from the builder
+
+                        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+                        PolylineOptions polylineOptions = new PolylineOptions();
 
 
-                            PolylineOptions polylineOptions = new PolylineOptions()
+                        if (lastKnownLocation.getLatitude() > 0 && lastKnownLocation.getLongitude() > 0) {
+                            polylineOptions
                                     .add(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()))
                                     .add(new LatLng(lastKnownLocation.getLatitude() + 0.10, lastKnownLocation.getLongitude()))  // North of the previous point, but at the same longitude
                                     .add(new LatLng(lastKnownLocation.getLatitude() + 0.10, lastKnownLocation.getLongitude() + 0.2))  // Same latitude, and 30km to the west
                                     .add(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude() + 0.2))  // Same longitude, and 16km to the south
                                     .add(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude())); // Closes the polyline.
-
-                            // Get back the mutable Polyline
-                            Polyline polyline = mMap.addPolyline(polylineOptions);
-
                         } else {
-                            Log.d("MAPSACTIVITY", "Current location is null. Using defaults.");
-                            Log.e("MAPSACTIVITY", "Exception: %s", task.getException());
-                            mMap.moveCamera(CameraUpdateFactory
-                                    .newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
-                            mMap.getUiSettings().setMyLocationButtonEnabled(false);
+                             polylineOptions
+                                    .add(new LatLng(defaultLocation.latitude, defaultLocation.longitude))
+                                    .add(new LatLng(defaultLocation.latitude + 0.10, defaultLocation.longitude))  // North of the previous point, but at the same longitude
+                                    .add(new LatLng(defaultLocation.latitude + 0.10, defaultLocation.longitude + 0.2))  // Same latitude, and 30km to the west
+                                    .add(new LatLng(defaultLocation.latitude, defaultLocation.longitude + 0.2))  // Same longitude, and 16km to the south
+                                    .add(new LatLng(defaultLocation.latitude, defaultLocation.longitude)); // Closes the polyline.
                         }
+
+
+                        // Get back the mutable Polyline
+                        Polyline polyline = mMap.addPolyline(polylineOptions);
+
+                    } else {
+                        Log.d("MAPSACTIVITY", "Current location is null. Using defaults.");
+                        Log.e("MAPSACTIVITY", "Exception: %s", task.getException());
+                        mMap.moveCamera(CameraUpdateFactory
+                                .newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
+                        mMap.getUiSettings().setMyLocationButtonEnabled(false);
                     }
                 });
             }
@@ -260,47 +251,39 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             // are the best match for the device's current location.
             @SuppressWarnings("MissingPermission") final
             Task<FindCurrentPlaceResponse> placeResult = placesClient.findCurrentPlace(request);
-            placeResult.addOnCompleteListener (new OnCompleteListener<FindCurrentPlaceResponse>() {
-                @Override
-                public void onComplete(@NonNull Task<FindCurrentPlaceResponse> task) {
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        FindCurrentPlaceResponse likelyPlaces = task.getResult();
+            placeResult.addOnCompleteListener (task -> {
+                if (task.isSuccessful() && task.getResult() != null) {
+                    FindCurrentPlaceResponse likelyPlaces = task.getResult();
 
-                        // Set the count, handling cases where less than 5 entries are returned.
-                        int count;
-                        if (likelyPlaces.getPlaceLikelihoods().size() < M_MAX_ENTRIES) {
-                            count = likelyPlaces.getPlaceLikelihoods().size();
-                        } else {
-                            count = M_MAX_ENTRIES;
+                    // Set the count, handling cases where less than 5 entries are returned.
+                    int count = Math.min(likelyPlaces.getPlaceLikelihoods().size(), M_MAX_ENTRIES);
+
+                    int i = 0;
+                    likelyPlaceNames = new String[count];
+                    likelyPlaceAddresses = new String[count];
+                    likelyPlaceAttributions = new List[count];
+                    likelyPlaceLatLngs = new LatLng[count];
+
+                    for (PlaceLikelihood placeLikelihood : likelyPlaces.getPlaceLikelihoods()) {
+                        // Build a list of likely places to show the user.
+                        likelyPlaceNames[i] = placeLikelihood.getPlace().getName();
+                        likelyPlaceAddresses[i] = placeLikelihood.getPlace().getAddress();
+                        likelyPlaceAttributions[i] = placeLikelihood.getPlace()
+                                .getAttributions();
+                        likelyPlaceLatLngs[i] = placeLikelihood.getPlace().getLatLng();
+
+                        i++;
+                        if (i > (count - 1)) {
+                            break;
                         }
-
-                        int i = 0;
-                        likelyPlaceNames = new String[count];
-                        likelyPlaceAddresses = new String[count];
-                        likelyPlaceAttributions = new List[count];
-                        likelyPlaceLatLngs = new LatLng[count];
-
-                        for (PlaceLikelihood placeLikelihood : likelyPlaces.getPlaceLikelihoods()) {
-                            // Build a list of likely places to show the user.
-                            likelyPlaceNames[i] = placeLikelihood.getPlace().getName();
-                            likelyPlaceAddresses[i] = placeLikelihood.getPlace().getAddress();
-                            likelyPlaceAttributions[i] = placeLikelihood.getPlace()
-                                    .getAttributions();
-                            likelyPlaceLatLngs[i] = placeLikelihood.getPlace().getLatLng();
-
-                            i++;
-                            if (i > (count - 1)) {
-                                break;
-                            }
-                        }
-
-                        // Show a dialog offering the user the list of likely places, and add a
-                        // marker at the selected place.
-                        MapsActivity.this.openPlacesDialog();
                     }
-                    else {
-                        Log.e("MAPTAG", "Exception: %s", task.getException());
-                    }
+
+                    // Show a dialog offering the user the list of likely places, and add a
+                    // marker at the selected place.
+                    MapsActivity.this.openPlacesDialog();
+                }
+                else {
+                    Log.e("MAPTAG", "Exception: %s", task.getException());
                 }
             });
         } else {
@@ -320,26 +303,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void openPlacesDialog() {
         // Ask the user to choose the place where they are now.
-        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // The "which" argument contains the position of the selected item.
-                LatLng markerLatLng = likelyPlaceLatLngs[which];
-                String markerSnippet = likelyPlaceAddresses[which];
-                if (likelyPlaceAttributions[which] != null) {
-                    markerSnippet = markerSnippet + "\n" + likelyPlaceAttributions[which];
-                }
-
-                // Add a marker for the selected place, with an info window
-                // showing information about that place.
-                mMap.addMarker(new MarkerOptions()
-                        .title(likelyPlaceNames[which])
-                        .position(markerLatLng)
-                        .snippet(markerSnippet));
-
-                // Position the map's camera at the location of the marker.
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markerLatLng, DEFAULT_ZOOM));
+        DialogInterface.OnClickListener listener = (dialog, which) -> {
+            // The "which" argument contains the position of the selected item.
+            LatLng markerLatLng = likelyPlaceLatLngs[which];
+            String markerSnippet = likelyPlaceAddresses[which];
+            if (likelyPlaceAttributions[which] != null) {
+                markerSnippet = markerSnippet + "\n" + likelyPlaceAttributions[which];
             }
+
+            // Add a marker for the selected place, with an info window
+            // showing information about that place.
+            mMap.addMarker(new MarkerOptions()
+                    .title(likelyPlaceNames[which])
+                    .position(markerLatLng)
+                    .snippet(markerSnippet));
+
+            // Position the map's camera at the location of the marker.
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markerLatLng, DEFAULT_ZOOM));
         };
 
         // Display the dialog.

@@ -19,7 +19,8 @@
 
         <activity
             android:name=".ReadNewsActivity"
-            android:label="@string/title_activity_read_news">
+            android:label="@string/title_activity_read_news"
+            android:parentActivityName=".MapsActivity">
         </activity>
 
         <!--

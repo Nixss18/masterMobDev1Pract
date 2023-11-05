@@ -30,6 +30,10 @@ android {
     buildFeatures {
         viewBinding true
     }
+
+    viewBinding {
+        enabled = true
+    }
 }
 
 dependencies {
@@ -39,8 +43,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:18.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'com.google.android.libraries.places:places:3.2.0'
-    implementation 'androidx.navigation:navigation-fragment:2.7.4'
-    implementation 'androidx.navigation:navigation-ui:2.7.4'
+    implementation 'androidx.navigation:navigation-fragment:2.7.5'
+    implementation 'androidx.navigation:navigation-ui:2.7.5'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0' // Replace with the latest version
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.3.2'
     testImplementation 'junit:junit:4.13.2'
